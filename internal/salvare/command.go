@@ -1,12 +1,12 @@
 package salvare
 
-import "fmt"
+type handler func(*State, []string) error
 
 type salvareCmd struct {
 	name        string
 	description string
 	usage       string
-	callback    func(string, []string) error
+	callback    handler
 }
 
 type commands map[string]salvareCmd
@@ -14,10 +14,10 @@ type commands map[string]salvareCmd
 func loadCmdRegistry() commands {
 	return commands{
 		"backup": {
-			callback: func(s1 string, s2 []string) error {
-				fmt.Println("Hello!")
-				return nil
-			},
+			callback: DriverMiddleware(CommandBackup),
+		},
+		"config init": {
+			callback: CommandConfigInit,
 		},
 	}
 }

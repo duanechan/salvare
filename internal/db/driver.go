@@ -1,6 +1,10 @@
 package db
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"net/url"
+)
 
 type Driver interface {
 	Backup() error
@@ -8,9 +12,16 @@ type Driver interface {
 	Compress() error
 }
 
-func ReadDriver(scheme string) (Driver, error) {
-	switch scheme {
+type baseDriver struct {
+	conn *url.URL
+}
+
+func GetDriver(dbURL *url.URL) (Driver, error) {
+	switch dbURL.Scheme {
 	case "postgres", "postgresql":
+		fmt.Println("Using PostgreSQL driver")
+		return &PostgresDriver{conn: dbURL}, nil
+	case "mysql":
 		return nil, nil
 	default:
 		return nil, errors.New("unsupported scheme")

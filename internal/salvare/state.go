@@ -3,24 +3,41 @@ package salvare
 import (
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/duanechan/salvare/internal/config"
+	"github.com/duanechan/salvare/internal/db"
 )
 
 type State struct {
 	cmdRegistry commands
-	config      *config.Config
+	driver      db.Driver
+	Config      *config.Config
 }
 
 func LoadState() (*State, error) {
-	config, err := config.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		return nil, err
 	}
 
+	var driver db.Driver
+	if cfg.ConnectionString() != config.EmptyConnString {
+		dbURL, err := url.Parse(cfg.ConnectionString())
+		if err != nil {
+			return nil, err
+		}
+
+		driver, err = db.GetDriver(dbURL)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &State{
 		cmdRegistry: loadCmdRegistry(),
-		config:      config,
+		driver:      driver,
+		Config:      cfg,
 	}, nil
 }
 
@@ -36,5 +53,5 @@ func (s State) ParseRun(args []string) error {
 		return fmt.Errorf("command '%s' does not exist", name)
 	}
 
-	return cmd.callback(name, rest)
+	return cmd.callback(&s, rest)
 }

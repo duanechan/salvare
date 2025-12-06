@@ -3,18 +3,23 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 )
 
 var (
-	root, _  = os.UserConfigDir()
-	filename = ".salvare.config.json"
+	root, _  = os.Getwd()
+	filename = "salvare.config.json"
+)
+
+const (
+	EmptyConnString string = "://:@:/"
 )
 
 type Config struct {
 	Conn struct {
-		Protocol string `json:"protocol"`
+		Scheme   string `json:"scheme"`
 		Username string `json:"username"`
 		Password string `json:"password"`
 		Hostname string `json:"host"`
@@ -22,12 +27,26 @@ type Config struct {
 		Database string `json:"databaseName"`
 		Query    string `json:"query"`
 	} `json:"connection"`
+	BackupDirectory string `json:"backupDirectory"`
+}
+
+func (c Config) ConnectionString() string {
+	return fmt.Sprintf("%s://%s:%s@%s:%s/%s%s",
+		c.Conn.Scheme,
+		c.Conn.Username,
+		c.Conn.Password,
+		c.Conn.Hostname,
+		c.Conn.Port,
+		c.Conn.Database,
+		c.Conn.Query,
+	)
 }
 
 func LoadConfig() (*Config, error) {
 	path := filepath.Join(root, filename)
 	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("Creating config file...")
 			config := &Config{}
 			WriteConfig(config)
 			return config, nil
@@ -61,6 +80,8 @@ func WriteConfig(config *Config) error {
 	if err := json.NewEncoder(file).Encode(config); err != nil {
 		return err
 	}
+
+	fmt.Println("Config file written!")
 
 	return nil
 }
