@@ -1,4 +1,4 @@
-package salvare
+package command
 
 type handler func(*State, []string) error
 

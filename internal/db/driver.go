@@ -2,28 +2,36 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 )
 
 type Driver interface {
-	Backup() error
+	Backup() ([]byte, error)
 	Restore() error
 	Compress() error
 }
 
+type driverConstructor func(*url.URL) Driver
+
+type drivers map[string]driverConstructor
+
+func loadDriverRegistry() drivers {
+	return drivers{
+		"postgres":   func(u *url.URL) Driver { return &PostgresDriver{Conn: u} },
+		"postgresql": func(u *url.URL) Driver { return &PostgresDriver{Conn: u} },
+		"mysql":      nil,
+	}
+}
+
 type baseDriver struct {
-	conn *url.URL
+	Conn *url.URL
 }
 
 func GetDriver(dbURL *url.URL) (Driver, error) {
-	switch dbURL.Scheme {
-	case "postgres", "postgresql":
-		fmt.Println("Using PostgreSQL driver")
-		return &PostgresDriver{conn: dbURL}, nil
-	case "mysql":
-		return nil, nil
-	default:
-		return nil, errors.New("unsupported scheme")
+	constructor, exists := loadDriverRegistry()[dbURL.Scheme]
+	if !exists {
+		return nil, errors.New("unsupported driver")
 	}
+
+	return constructor(dbURL), nil
 }

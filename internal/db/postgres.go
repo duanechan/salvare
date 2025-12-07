@@ -1,24 +1,20 @@
 package db
 
 import (
-	"fmt"
 	"os/exec"
 )
 
 type PostgresDriver baseDriver
 
-func (d PostgresDriver) Backup() error {
-	fmt.Println(d.conn.String())
-	cmd := exec.Command("pg_dump", d.conn.String())
+func (d PostgresDriver) Backup() ([]byte, error) {
+	cmd := exec.Command("pg_dump", d.Conn.String())
 
 	dump, err := cmd.Output()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println(string(dump))
-
-	return nil
+	return dump, nil
 }
 
 func (d PostgresDriver) Restore() error {

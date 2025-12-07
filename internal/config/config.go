@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	root, _  = os.Getwd()
+	cwd, _   = os.Getwd()
 	filename = "salvare.config.json"
 )
 
@@ -43,7 +43,7 @@ func (c Config) ConnectionString() string {
 }
 
 func LoadConfig() (*Config, error) {
-	path := filepath.Join(root, filename)
+	path := filepath.Join(cwd, filename)
 	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			fmt.Println("Creating config file...")
@@ -69,7 +69,7 @@ func LoadConfig() (*Config, error) {
 }
 
 func WriteConfig(config *Config) error {
-	path := filepath.Join(root, filename)
+	path := filepath.Join(cwd, filename)
 
 	file, err := os.Open(path)
 	if err != nil {
