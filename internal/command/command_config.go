@@ -1,7 +1,6 @@
 package command
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/duanechan/salvare/internal/config"
@@ -9,8 +8,9 @@ import (
 )
 
 func CommandConfig(state *State, args []string) (*models.Metrics, error) {
-	if state.Config.IsIncomplete() {
-		return nil, errors.New("incomplete configuration file")
+	if state.Config != nil && state.Config.IsIncomplete() {
+		fmt.Println("Configuration file already initialized.")
+		return nil, nil
 	}
 
 	if err := config.WriteConfig(&config.Config{}); err != nil {
