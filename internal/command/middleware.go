@@ -1,11 +1,15 @@
 package command
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/duanechan/salvare/internal/models"
+)
 
 func DriverMiddleware(handler handler) handler {
-	return func(state *State, args []string) error {
+	return func(state *State, args []string) (*models.Metrics, error) {
 		if state.driver == nil {
-			return errors.New("driver not set")
+			return nil, errors.New("driver not set")
 		}
 		return handler(state, args)
 	}

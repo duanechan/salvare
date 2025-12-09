@@ -13,19 +13,19 @@ import (
 )
 
 type State struct {
-	cmdRegistry commands
+	cmdRegistry registry
 	driver      db.Driver
 	Config      *config.Config
 }
 
 func LoadState() (*State, error) {
 	cfg, err := config.LoadConfig()
-	if err != nil {
+	if err != nil && !errors.Is(err, config.ConfigFileNotExists) {
 		return nil, err
 	}
 
 	var driver db.Driver
-	if cfg.ConnectionString() != config.EmptyConnString {
+	if cfg != nil && cfg.ConnectionString() != config.EmptyConnString {
 		dbURL, err := url.Parse(cfg.ConnectionString())
 		if err != nil {
 			return nil, err
@@ -51,12 +51,31 @@ func (s *State) ParseRun(args []string) error {
 
 	name, rest := args[0], args[1:]
 
-	cmd, exists := s.cmdRegistry[name]
+	subCommands, exists := s.cmdRegistry[name]
 	if !exists {
 		return fmt.Errorf("command '%s' does not exist", name)
 	}
 
-	return cmd.callback(s, rest)
+	sub := ""
+	if len(rest) >= 1 {
+		sub = rest[0]
+	}
+	command, exists := subCommands[sub]
+	if !exists {
+		// command.displayUsage()
+		return fmt.Errorf("command '%s %s' does not exist", name, sub)
+	}
+
+	metrics, err := command.callback(s, rest)
+	if err != nil {
+		return err
+	}
+
+	if metrics != nil {
+		fmt.Printf("Operation took %dms", metrics.Took)
+	}
+
+	return nil
 }
 
 const (

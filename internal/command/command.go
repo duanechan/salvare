@@ -1,6 +1,8 @@
 package command
 
-type handler func(*State, []string) error
+import "github.com/duanechan/salvare/internal/models"
+
+type handler func(*State, []string) (*models.Metrics, error)
 
 type salvareCmd struct {
 	name        string
@@ -11,13 +13,25 @@ type salvareCmd struct {
 
 type commands map[string]salvareCmd
 
-func loadCmdRegistry() commands {
-	return commands{
+type registry map[string]commands
+
+func loadCmdRegistry() registry {
+	return registry{
 		"backup": {
-			callback: DriverMiddleware(CommandBackup),
+			"": {
+				name:        "backup",
+				description: "Creates a dump (backup) file in the configuration's specified backup directory.",
+				usage:       "salvare backup",
+				callback:    DriverMiddleware(CommandBackup),
+			},
 		},
-		"config init": {
-			callback: CommandConfigInit,
+		"config": {
+			"init": {
+				name:        "config init",
+				description: "Creates an empty Salvare configuration file.",
+				usage:       "salvare config init",
+				callback:    CommandConfig,
+			},
 		},
 	}
 }

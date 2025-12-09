@@ -42,14 +42,24 @@ func (c Config) ConnectionString() string {
 	)
 }
 
+func (c Config) IsIncomplete() bool {
+	return c.Conn.Scheme == "" ||
+		c.Conn.Username == "" ||
+		c.Conn.Password == "" ||
+		c.Conn.Hostname == "" ||
+		c.Conn.Port == "" ||
+		c.Conn.Database == ""
+}
+
+var (
+	ConfigFileNotExists = errors.New("configuration file does not exist")
+)
+
 func LoadConfig() (*Config, error) {
 	path := filepath.Join(cwd, filename)
 	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			fmt.Println("Creating config file...")
-			config := &Config{}
-			WriteConfig(config)
-			return config, nil
+			return nil, ConfigFileNotExists
 		}
 		return nil, err
 	}
@@ -71,7 +81,7 @@ func LoadConfig() (*Config, error) {
 func WriteConfig(config *Config) error {
 	path := filepath.Join(cwd, filename)
 
-	file, err := os.Open(path)
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -80,8 +90,6 @@ func WriteConfig(config *Config) error {
 	if err := json.NewEncoder(file).Encode(config); err != nil {
 		return err
 	}
-
-	fmt.Println("Config file written!")
 
 	return nil
 }
