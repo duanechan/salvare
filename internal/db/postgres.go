@@ -6,7 +6,12 @@ import (
 
 type PostgresDriver baseDriver
 
-func (d PostgresDriver) Backup() ([]byte, error) {
+func (d PostgresDriver) Backup(opts ...BackupOption) ([]byte, error) {
+	var args []string
+	for _, op := range opts {
+		op(args)
+	}
+
 	cmd := exec.Command("pg_dump", d.Conn.String())
 
 	dump, err := cmd.Output()

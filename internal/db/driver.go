@@ -5,8 +5,12 @@ import (
 	"net/url"
 )
 
+type BackupFunc func(...BackupOption) []string
+type RestoreFunc func() error
+type CompressFunc func() error
+
 type Driver interface {
-	Backup() ([]byte, error)
+	Backup(...BackupOption) ([]byte, error)
 	Restore() error
 	Compress() error
 }
