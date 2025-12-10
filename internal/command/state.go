@@ -4,9 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"os"
-	"path/filepath"
-	"time"
 
 	"github.com/duanechan/salvare/internal/config"
 	"github.com/duanechan/salvare/internal/db"
@@ -72,23 +69,8 @@ func (s *State) ParseRun(args []string) error {
 	}
 
 	if metrics != nil {
-		fmt.Printf("Operation took %dms", metrics.Took)
+		fmt.Printf("Operation took %dms\n", metrics.Took)
 	}
 
 	return nil
-}
-
-const (
-	defaultLayout string = "Backup_2006_01_02_15_04_05_%s.sql"
-)
-
-func (s *State) dumpFile(data []byte) error {
-	filename := time.Now().Format(fmt.Sprintf(defaultLayout, s.Config.Conn.Database))
-	path := filepath.Join(s.Config.BackupDirectory, filename)
-
-	if err := os.MkdirAll(s.Config.BackupDirectory, 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(path, data, 0644)
 }

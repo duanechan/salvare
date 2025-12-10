@@ -10,7 +10,7 @@ import (
 func main() {
 	app, err := command.LoadState()
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Failed to load state:", err)
 		os.Exit(1)
 	}
 
@@ -21,7 +21,7 @@ func main() {
 	}
 
 	if err := app.ParseRun(os.Args[1:]); err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Salvare error:", err)
 		os.Exit(1)
 	}
 }
