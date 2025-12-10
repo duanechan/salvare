@@ -11,7 +11,8 @@ import (
 
 func CommandBackup(state *State, args []string) (*models.Metrics, error) {
 	start := time.Now()
-	data, err := state.driver.Backup(db.FullBackup(state.Config.ConnectionString()))
+	options := db.ParseBackupOptions(state.Config, args)
+	data, err := state.driver.Backup(options...)
 
 	if err != nil {
 		return nil, err

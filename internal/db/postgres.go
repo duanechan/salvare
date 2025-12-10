@@ -9,10 +9,10 @@ type PostgresDriver baseDriver
 func (d PostgresDriver) Backup(opts ...BackupOption) ([]byte, error) {
 	var args []string
 	for _, op := range opts {
-		op(args)
+		args = op(args)
 	}
 
-	cmd := exec.Command("pg_dump", d.Conn.String())
+	cmd := exec.Command("pg_dump", args...)
 
 	dump, err := cmd.Output()
 	if err != nil {
