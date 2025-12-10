@@ -8,7 +8,7 @@ import (
 )
 
 func CommandConfig(state *State, args []string) (*models.Metrics, error) {
-	if state.Config != nil && state.Config.IsIncomplete() {
+	if state.Config != nil {
 		fmt.Println("Configuration file already initialized.")
 		return nil, nil
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -42,17 +43,18 @@ func (c Config) ConnectionString() string {
 	)
 }
 
-func (c Config) IsIncomplete() bool {
-	return c.Conn.Scheme == "" ||
-		c.Conn.Username == "" ||
-		c.Conn.Password == "" ||
-		c.Conn.Hostname == "" ||
-		c.Conn.Port == "" ||
+func (c Config) IsEmpty() bool {
+	return c.Conn.Scheme == "" &&
+		c.Conn.Username == "" &&
+		c.Conn.Password == "" &&
+		c.Conn.Hostname == "" &&
+		c.Conn.Port == "" &&
 		c.Conn.Database == ""
 }
 
 var (
 	ConfigFileNotExists = errors.New("configuration file does not exist")
+	ConfigFileEOF       = errors.New("configuration file EOF")
 )
 
 func LoadConfig() (*Config, error) {
@@ -72,6 +74,9 @@ func LoadConfig() (*Config, error) {
 
 	var config Config
 	if err := json.NewDecoder(file).Decode(&config); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil, ConfigFileEOF
+		}
 		return nil, err
 	}
 

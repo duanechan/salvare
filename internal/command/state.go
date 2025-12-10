@@ -17,7 +17,8 @@ type State struct {
 
 func LoadState() (*State, error) {
 	cfg, err := config.LoadConfig()
-	if err != nil && !errors.Is(err, config.ConfigFileNotExists) {
+	if err != nil && (!errors.Is(err, config.ConfigFileNotExists) &&
+		!errors.Is(err, config.ConfigFileEOF)) {
 		return nil, err
 	}
 

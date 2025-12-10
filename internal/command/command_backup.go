@@ -11,7 +11,6 @@ import (
 func CommandBackup(state *State, args []string) (*models.Metrics, error) {
 	start := time.Now()
 	data, err := state.driver.Backup()
-	end := time.Since(start)
 
 	if err != nil {
 		return nil, err
@@ -22,5 +21,6 @@ func CommandBackup(state *State, args []string) (*models.Metrics, error) {
 	}
 	fmt.Println("Backup created!")
 
+	end := time.Since(start)
 	return &models.Metrics{Took: end.Milliseconds()}, nil
 }
