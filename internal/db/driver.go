@@ -2,40 +2,41 @@ package db
 
 import (
 	"errors"
-	"net/url"
+
+	"github.com/duanechan/salvare/internal/config"
 )
 
-type BackupFunc func(...BackupOption) []string
+type BackupFunc func() []string
 type RestoreFunc func() error
 type CompressFunc func() error
 
 type Driver interface {
-	Backup(...BackupOption) ([]byte, error)
+	Backup() ([]byte, error)
 	Restore() error
 	Compress() error
 }
 
-type driverConstructor func(*url.URL) Driver
+type driverConstructor func(conn *config.Conn) Driver
 
 type drivers map[string]driverConstructor
 
 func loadDriverRegistry() drivers {
 	return drivers{
-		"postgres":   func(u *url.URL) Driver { return &PostgresDriver{Conn: u} },
-		"postgresql": func(u *url.URL) Driver { return &PostgresDriver{Conn: u} },
+		"postgres":   func(conn *config.Conn) Driver { return &PostgresDriver{Conn: conn} },
+		"postgresql": func(conn *config.Conn) Driver { return &PostgresDriver{Conn: conn} },
 		"mysql":      nil,
 	}
 }
 
 type baseDriver struct {
-	Conn *url.URL
+	Conn *config.Conn
 }
 
-func GetDriver(dbURL *url.URL) (Driver, error) {
-	constructor, exists := loadDriverRegistry()[dbURL.Scheme]
+func GetDriver(conn *config.Conn) (Driver, error) {
+	constructor, exists := loadDriverRegistry()[conn.Scheme]
 	if !exists {
 		return nil, errors.New("unsupported driver")
 	}
 
-	return constructor(dbURL), nil
+	return constructor(conn), nil
 }

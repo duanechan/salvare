@@ -18,16 +18,18 @@ const (
 	EmptyConnString string = "://:@:/"
 )
 
+type Conn struct {
+	Scheme   string `json:"scheme"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Hostname string `json:"host"`
+	Port     string `json:"port"`
+	Database string `json:"databaseName"`
+	Query    string `json:"query"`
+}
+
 type Config struct {
-	Conn struct {
-		Scheme   string `json:"scheme"`
-		Username string `json:"username"`
-		Password string `json:"password"`
-		Hostname string `json:"host"`
-		Port     string `json:"port"`
-		Database string `json:"databaseName"`
-		Query    string `json:"query"`
-	} `json:"connection"`
+	Conn            Conn   `json:"connection"`
 	BackupDirectory string `json:"backupDirectory"`
 }
 

@@ -1,18 +1,39 @@
 package db
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 )
 
 type PostgresDriver baseDriver
 
-func (d PostgresDriver) Backup(opts ...BackupOption) ([]byte, error) {
-	var args []string
-	for _, op := range opts {
-		args = op(args)
-	}
+func (d PostgresDriver) Backup() ([]byte, error) {
+	tmp, _ := os.CreateTemp("", "pgpass-*")
+	defer os.Remove(tmp.Name())
 
-	cmd := exec.Command("pg_dump", args...)
+	line := fmt.Sprintf("%s:%s:%s:%s:%s\n",
+		d.Conn.Hostname,
+		d.Conn.Port,
+		d.Conn.Database,
+		d.Conn.Username,
+		d.Conn.Password,
+	)
+
+	tmp.WriteString(line)
+	tmp.Chmod(0600)
+	tmp.Close()
+
+	cmd := exec.Command("pg_dump",
+		"-h", d.Conn.Hostname,
+		"-p", d.Conn.Port,
+		"-U", d.Conn.Username,
+		d.Conn.Database,
+	)
+
+	cmd.Env = append(os.Environ(),
+		"PGPASSFILE="+tmp.Name(),
+	)
 
 	dump, err := cmd.Output()
 	if err != nil {

@@ -3,7 +3,6 @@ package command
 import (
 	"errors"
 	"fmt"
-	"net/url"
 
 	"github.com/duanechan/salvare/internal/config"
 	"github.com/duanechan/salvare/internal/db"
@@ -24,12 +23,7 @@ func LoadState() (*State, error) {
 
 	var driver db.Driver
 	if cfg != nil && cfg.ConnectionString() != config.EmptyConnString {
-		dbURL, err := url.Parse(cfg.ConnectionString())
-		if err != nil {
-			return nil, err
-		}
-
-		driver, err = db.GetDriver(dbURL)
+		driver, err = db.GetDriver(&cfg.Conn)
 		if err != nil {
 			return nil, err
 		}
